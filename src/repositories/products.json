@@ -1,0 +1,25 @@
+{
+  "lastId": 2,
+  "products": [
+    {
+      "title": "Mouse Gamer inalámbrico",
+      "description": "Mouse gamer inalámbrico para ganarle a todos tus amigos!",
+      "code": "PCMOU-100283",
+      "price": 19.99,
+      "quantity": 100,
+      "status": true,
+      "thumbnails": [],
+      "id": 1
+    },
+    {
+      "title": "Pantalón Vaquero",
+      "description": "Pantalones de mezclilla clásica. Durederos, cómodos y resistentes.",
+      "code": "RHJNS-600991",
+      "price": 49.99,
+      "quantity": 650,
+      "status": true,
+      "thumbnails": [],
+      "id": 2
+    }
+  ]
+}

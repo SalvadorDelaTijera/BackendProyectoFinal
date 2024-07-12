@@ -1,21 +1,65 @@
 import { readFile, writeFile } from "node:fs/promises";
+import Product from "../models/product.model.js";
 
 export default class ProductManager {
-  static lastId = 0;
+  static #INITIAL_LAST_ID = 0;
 
-  constructor(path = "./products.json") {
+  #lastId;
+  #products = [];
+
+  constructor(path = "./src/repositories/products.json") {
     this.path = path;
+  }
+
+  async loadFile() {
+    try {
+      const reader = await readFile(this.path, { encoding: "utf-8" });
+      if (reader) {
+        const file = JSON.parse(reader);
+
+        this.#lastId = file.lastId;
+        this.#products = file.products;
+      } else {
+        this.#lastId = ProductManager.#INITIAL_LAST_ID;
+        this.#products = [];
+      }
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        this.#lastId = ProductManager.#INITIAL_LAST_ID;
+        this.#products = [];
+      } else {
+        console.error(error);
+        throw error;
+      }
+    }
+  }
+
+  async saveFile() {
+    try {
+      const file = {
+        lastId: this.#lastId,
+        products: this.#products,
+      };
+
+      const writter = JSON.stringify(file, null, 2);
+
+      await writeFile(this.path, writter, { encoding: "utf-8" });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async readAllProducts() {
     try {
-      const allProducts = await readFile(this.path, { encoding: "utf-8" });
+      await this.loadFile();
 
-      return JSON.parse(allProducts);
+      return this.#products;
     } catch (error) {
-      if (error.code = 'ENOENT') {
+      if ((error.code = "ENOENT")) {
         return [];
       } else {
+        console.error(error);
         throw error;
       }
     }
@@ -23,9 +67,9 @@ export default class ProductManager {
 
   async readProductById(productId) {
     try {
-      const products = await this.readAllProducts();
+      await this.loadFile();
 
-      const data = products.find((product) => product.id === productId);
+      const data = this.#products.find((product) => product.id === productId);
 
       if (!data) {
         throw new Error(`No se encontró el producto con el id ${productId}`);
@@ -33,87 +77,109 @@ export default class ProductManager {
 
       return data;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
   async saveProducts(products) {
     try {
-      const string = JSON.stringify(products, null, 2);
+      const newProducts = products.map((product) => Product.parse(product));
+      const maxId = Math.max(...newProducts.map((product) => product.id));
+      this.#products = [...newProducts];
+      this.#lastId = maxId;
 
-      await writeFile(this.path, string, (err) => {
-        if (err) {
-          console.error(err);
-        }
-      });
+      await this.saveFile();
+
+      return newProducts;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
   async createProduct(productData) {
-    const newId = ProductManager.getLastId() + 1;
-    
-    const newProduct = {
-      ...productData,
-      id: newId
-    };
-
     try {
-      const products = await this.readAllProducts();
+      let retVal;
+      const newProduct = Product.parse(productData);
 
-      products.push(newProduct);
-      ProductManager.setLastId(newProduct.id);
+      await this.loadFile();
+      const existingProduct = this.#products.find(
+        (product) => product.code === newProduct.code
+      );
 
-      await this.saveProducts(products);
+      if (existingProduct) {
+        existingProduct.quantity += newProduct.quantity;
+        retVal = existingProduct;
+      } else {
+        newProduct.id = ++this.#lastId;
+        this.#products.push(newProduct);
+        retVal = newProduct;
+      }
+
+      await this.saveFile();
+
+      return retVal;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
   async deleteProduct(productId) {
     try {
-      const products = await this.readAllProducts();
+      await this.loadFile();
 
-      const product = products.find((item) => item.id === productId);
+      const existingProductIndex = this.#products.findIndex(
+        (product) => product.id === productId
+      );
 
-      if (!product) {
-        throw new Error(`No se encontró el producto con el id ${productId}`);
+      if (existingProductIndex === -1) {
+        throw new Error(`No se encontró el producto con el Id ${productId}.`);
       }
 
-      const modifiedProducts = products.filter((item) => item.id !== productId);
+      const retVal = this.#products[existingProductIndex];
+      this.#products = this.#products.filter(
+        (product) => product.id !== productId
+      );
 
-      await this.saveProducts(modifiedProducts);
+      await this.saveFile();
+
+      return retVal;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
   async updateProduct(productId, data) {
     try {
-      const products = await this.readAllProducts();
+      await this.loadFile();
 
-      const productIndex = products.findIndex((item) => item.id === productId);
+      const existingProductIndex = this.#products.findIndex(
+        (product) => product.id === productId
+      );
 
-      if (productIndex === -1) {
-        throw new Error(`No se encontró el producto con el Id ${productId}`);
+      if (existingProductIndex === -1) {
+        throw new Error(`No se encontró el producto con el Id ${productId}.`);
       }
 
-      const productId = products[productIndex].id;
+      const updatedData = Product.parse(data);
+      this.#products[existingProductIndex] = {
+        ...updatedData,
+        id: productId,
+      };
 
-      products.splice(productIndex, 1, { ...data, id: productId });
+      await this.saveFile();
 
-      await this.saveProducts(products);
+      return this.#products[existingProductIndex];
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  static getLastId() {
-    return ProductManager.lastId;
-  }
-
-  static setLastId(id) {
-    ProductManager.lastId = id;
+  getLastId() {
+    return this.#lastId;
   }
 }

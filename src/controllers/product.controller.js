@@ -32,9 +32,9 @@ export const createProduct = async (req, res) => {
   const { body } = req;
 
   try {
-    await ProductService.createProduct(body);
+    const newProduct = await ProductService.createProduct(body);
 
-    res.status(201).json({ message: "Se creó exitosamente el producto." });
+    res.status(201).json({ message: "Se creó exitosamente el producto.", newProduct });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -51,9 +51,9 @@ export const updateProduct = async (req, res) => {
   }
 
   try {
-    await ProductService.updateProduct(productId, body);
+    const updatedProduct = await ProductService.updateProduct(productId, body);
 
-    res.status(200).json({ message: "Se actualizó exitosamente el producto." });
+    res.status(200).json({ message: "Se actualizó exitosamente el producto.", updatedProduct });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -71,9 +71,9 @@ export const deleteProduct = async (req, res) => {
   }
 
   try {
-    await ProductService.deleteProduct(productId);
+    const deletedProduct = await ProductService.deleteProduct(productId);
 
-    res.status(200).json({ message: "Se borró exitosamente el producto." });
+    res.status(200).json({ message: "Se borró exitosamente el producto.", deletedProduct });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
