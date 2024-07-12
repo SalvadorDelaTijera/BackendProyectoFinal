@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import Product from "../models/product.model.js";
 
 export default class ProductManager {
-  static #INITIAL_LAST_ID = 0;
+  static INITIAL_LAST_ID = 0;
 
   #lastId;
   #products = [];
@@ -17,15 +17,15 @@ export default class ProductManager {
       if (reader) {
         const file = JSON.parse(reader);
 
-        this.#lastId = file.lastId;
-        this.#products = file.products;
+        this.#lastId = file?.lastId || ProductManager.INITIAL_LAST_ID;
+        this.#products = file?.products || [];
       } else {
-        this.#lastId = ProductManager.#INITIAL_LAST_ID;
+        this.#lastId = ProductManager.INITIAL_LAST_ID;
         this.#products = [];
       }
     } catch (error) {
       if (error.code === "ENOENT") {
-        this.#lastId = ProductManager.#INITIAL_LAST_ID;
+        this.#lastId = ProductManager.INITIAL_LAST_ID;
         this.#products = [];
       } else {
         console.error(error);
