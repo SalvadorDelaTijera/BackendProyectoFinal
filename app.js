@@ -2,13 +2,12 @@ import e from "express";
 import ProductsRouter from "./src/routers/product.router.js";
 
 const app = e();
-const PORT = 8080;
 
+// Middlewares de la app
 app.use(e.json());
 app.use(e.urlencoded({ extended: true }));
 
+// Rutas
 app.use("/api/products", ProductsRouter);
 
-app.listen(PORT, () => {
-  console.info(`🚀 Server listening on port ${PORT}`);
-});
+export default app;
