@@ -41,8 +41,6 @@ export default class ProductManager {
     try {
       const string = JSON.stringify(products, null, 2);
 
-      console.log("string", string);
-
       await writeFile(this.path, string, (err) => {
         if (err) {
           console.error(err);
@@ -67,11 +65,8 @@ export default class ProductManager {
       products.push(newProduct);
       ProductManager.setLastId(newProduct.id);
 
-      console.log("products", products);
-
       await this.saveProducts(products);
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }
@@ -90,7 +85,6 @@ export default class ProductManager {
 
       await this.saveProducts(modifiedProducts);
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }
@@ -111,7 +105,6 @@ export default class ProductManager {
 
       await this.saveProducts(products);
     } catch (error) {
-      console.error(error);
       throw error;
     }
   }
