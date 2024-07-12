@@ -82,22 +82,6 @@ export default class ProductManager {
     }
   }
 
-  async saveProducts(products) {
-    try {
-      const newProducts = products.map((product) => Product.parse(product));
-      const maxId = Math.max(...newProducts.map((product) => product.id));
-      this.#products = [...newProducts];
-      this.#lastId = maxId;
-
-      await this.saveFile();
-
-      return newProducts;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-
   async createProduct(productData) {
     try {
       let retVal;
