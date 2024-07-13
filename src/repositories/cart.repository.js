@@ -5,7 +5,7 @@ export default class CartManager {
   static INITIAL_LAST_ID = 0;
 
   #lastId = 0;
-  #carts = [];
+  carts = [];
 
   constructor(path = './src/repositories/carts.json') {
     this.path = path;
@@ -19,10 +19,10 @@ export default class CartManager {
         const file = JSON.parse(reader);
 
         this.#lastId = file?.lastId || CartManager.INITIAL_LAST_ID;
-        this.#carts = file?.carts || [];
+        this.carts = file?.carts || [];
       } else {
         this.#lastId = CartManager.INITIAL_LAST_ID;
-        this.#carts = [];
+        this.carts = [];
       }
     } catch (error) {
       console.error(error);
@@ -34,7 +34,7 @@ export default class CartManager {
     try {
       const file = {
         lastId: this.#lastId,
-        carts: this.#carts
+        carts: this.carts
       };
 
       const writer = JSON.stringify(file, null, 2);
@@ -50,7 +50,7 @@ export default class CartManager {
     try {
       await this.loadFile();
 
-      return this.#carts;
+      return this.carts;
     } catch (error) {
       console.error(error);
       throw error;
@@ -61,13 +61,13 @@ export default class CartManager {
     try {
       await this.loadFile();
 
-      const existingCartIndex = this.#carts.findIndex((cart) => cart.id === cartId);
+      const existingCartIndex = this.carts.findIndex((cart) => cart.id === cartId);
 
       if (existingCartIndex === -1) {
         throw new Error(`No se encontró el carrito con el Id ${cartId}.`);
       }
 
-      return this.#carts[existingCartIndex];
+      return this.carts[existingCartIndex];
     } catch (error) {
       console.error(error);
       throw error;
@@ -82,7 +82,7 @@ export default class CartManager {
 
       newCart.id = ++this.#lastId;
 
-      this.#carts.push(newCart);
+      this.carts.push(newCart);
 
       await this.saveFile();
 
@@ -97,21 +97,21 @@ export default class CartManager {
     try {
       await this.loadFile();
 
-      const existingCartIndex = this.#carts.findIndex((cart) => cart.id === cartId);
+      const existingCartIndex = this.carts.findIndex((cart) => cart.id === cartId);
 
       if (existingCartIndex === -1) {
         throw new Error(`No se encontró el carrito con el Id ${cartId}.`);
       }
 
       const parsedCart = Cart.parse(cartData);
-      this.#carts[existingCartIndex] = {
+      this.carts[existingCartIndex] = {
         ...parsedCart,
         id: cartId
       }
 
       await this.saveFile();
 
-      return this.#carts[existingCartIndex];
+      return this.carts[existingCartIndex];
     } catch (error) {
       console.log(error);
       throw error;
@@ -122,15 +122,15 @@ export default class CartManager {
     try {
       await this.loadFile();
 
-      const existingCartIndex = this.#carts.findIndex((cart) => cart.id === cartId);
+      const existingCartIndex = this.carts.findIndex((cart) => cart.id === cartId);
 
       if (existingCartIndex === -1) {
         throw new Error(`No se encontró el carrito con el Id ${cartId}`);
       }
 
-      const retVal = this.#carts[existingCartIndex];
+      const retVal = this.carts[existingCartIndex];
 
-      this.#carts = this.#carts.filter((cart) => cart.id !== cartId);
+      this.carts = this.carts.filter((cart) => cart.id !== cartId);
 
       await this.saveFile();
 
